@@ -81,7 +81,7 @@ export class AttachmentUtils {
     return this.s3.getSignedUrl('putObject', {
       Bucket: this.bucketName,
       Key: imageId,
-      Expires: this.urlExpiration
+      Expires: Number(this.urlExpiration)
     })
   }
 }
