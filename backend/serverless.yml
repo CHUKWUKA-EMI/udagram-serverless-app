@@ -1,12 +1,10 @@
-# TODO: Change the name of the org 
+# TODO: Change the name of the org
 org: chukwuka
-app: serverless-todo-app
 service: serverless-todo-app
 
 plugins:
   - serverless-webpack
   - serverless-iam-roles-per-function
-  - serverless-reqvalidator-plugin
   - serverless-plugin-canary-deployments
   - serverless-plugin-tracing
 
@@ -22,7 +20,7 @@ provider:
     lambda: true
     apiGateway: true
 
-  # Use these variables in the functions and resouorces section below. For example, 
+  # Use these variables in the functions and resouorces section below. For example,
   # ${self:provider.environment.ATTACHMENT_S3_BUCKET}
   environment:
     TODOS_TABLE: Todos-${self:provider.stage}
@@ -30,7 +28,7 @@ provider:
     IMAGES_TABLE: Images-${self:provider.stage}
     IMAGE_ID_INDEX: ImageIdIndex
     USER_ID_INDEX: UserIdIndex
-    ATTACHMENT_S3_BUCKET: serverless-c4-todo-images-${self:provider.stage}
+    ATTACHMENT_S3_BUCKET: chukwukaemi-serverless-todo-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
 
   logs:
@@ -44,14 +42,14 @@ provider:
           Action:
             - xray:PutTelemetryRecords
             - xray:PutTraceSegments
-          Resource: "*"
+          Resource: '*'
 
 custom:
   documentation:
     api:
       info:
         version: v1.0.0
-        title: Udagram Serverless API 
+        title: Udagram Serverless API
         description: Serverless application for images sharing
     models:
       - name: TodoRequest
@@ -62,11 +60,9 @@ custom:
         schema: ${file(models/update-todo-model.json)}
 
 functions:
-
   Auth:
     handler: src/lambda/auth/auth0Authorizer.handler
 
-  
   GetTodos:
     handler: src/lambda/http/getTodos.handler
     events:
@@ -90,7 +86,6 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.IMAGES_TABLE}/index/${self:provider.environment.IMAGE_ID_INDEX}
 
- 
   CreateTodo:
     handler: src/lambda/http/createTodo.handler
     events:
@@ -101,7 +96,7 @@ functions:
           authorizer: Auth
           request:
             schemas:
-              application/json: 
+              application/json:
                 schema: ${file(models/create-todo-model.json)}
                 name: CreateTodoModel
                 description: 'Validation model for Creating Todos'
@@ -112,7 +107,6 @@ functions:
           - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
- 
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
     events:
@@ -123,7 +117,7 @@ functions:
           authorizer: Auth
           request:
             schemas:
-              application/json: 
+              application/json:
                 schema: ${file(models/update-todo-model.json)}
                 name: UpdateTodoModel
                 description: 'Validation model for Updating Todos'
@@ -138,7 +132,6 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_CREATED_AT_INDEX}
 
-  
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
     events:
@@ -158,7 +151,6 @@ functions:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_CREATED_AT_INDEX}
 
-  
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
@@ -190,7 +182,7 @@ functions:
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_CREATED_AT_INDEX}
 
 resources:
-  Resources: 
+  Resources:
     GatewayResponseDefault4XX:
       Type: AWS::ApiGateway::GatewayResponse
       Properties:
@@ -201,8 +193,7 @@ resources:
         ResponseType: DEFAULT_4XX
         RestApiId:
           Ref: ApiGatewayRestApi
-    
-  
+
     TodosTable:
       Type: AWS::DynamoDB::Table
       Properties:
@@ -230,8 +221,8 @@ resources:
             Projection:
               ProjectionType: ALL
 
-      ImagesTable:
-      Type: "AWS::DynamoDB::Table"
+    ImagesTable:
+      Type: 'AWS::DynamoDB::Table'
       Properties:
         AttributeDefinitions:
           - AttributeName: todoId
@@ -252,20 +243,18 @@ resources:
         GlobalSecondaryIndexes:
           - IndexName: ${self:provider.environment.IMAGE_ID_INDEX}
             KeySchema:
-            - AttributeName: imageId
-              KeyType: HASH
+              - AttributeName: imageId
+                KeyType: HASH
             Projection:
               ProjectionType: ALL
 
-    
     AttachmentsBucket:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:provider.environment.ATTACHMENT_S3_BUCKET}
         CorsConfiguration:
           CorsRules:
-            -
-              AllowedOrigins:
+            - AllowedOrigins:
                 - '*'
               AllowedHeaders:
                 - '*'
@@ -277,13 +266,12 @@ resources:
                 - HEAD
               MaxAge: 3000
 
-    
     BucketPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
         PolicyDocument:
           Id: MyPolicy
-          Version: "2012-10-17"
+          Version: '2012-10-17'
           Statement:
             - Sid: PublicReadForGetBucketObjects
               Effect: Allow
